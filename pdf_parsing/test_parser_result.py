@@ -1,6 +1,13 @@
 import json
 import unittest
-from parser import RESULT_FILE_PATH, END_QUOTE_SYMBOL, START_SOURCE_SYMBOL, Parser
+from parser import (
+    RESULT_FILE_PATH,
+    END_QUOTE_SYMBOL,
+    START_SOURCE_SYMBOL,
+    Parser,
+    FirstLinesData,
+    ParsedStoicPageContent,
+)
 
 
 # Test resulted JSON file
@@ -14,25 +21,25 @@ class TestJsonResult(unittest.TestCase):
         with open(RESULT_FILE_PATH) as file:
             cls.data = json.load(file)
 
-    # Tests for Parser.__is_end_of_quote
-    def test__is_end_of_quote(self):
+    # Tests for Parser._is_end_of_quote
+    def test_is_end_of_quote(self):
         # Test case: line ends with END_QUOTE_SYMBOL
         self.assertTrue(
-            self.parser._Parser__is_end_of_quote(
+            self.parser._is_end_of_quote(
                 f"This is a quote: {END_QUOTE_SYMBOL}", "Next line"
             )
         )
 
         # Test case: next line starts with START_SOURCE_SYMBOL and next five characters are uppercase
         self.assertTrue(
-            self.parser._Parser__is_end_of_quote(
+            self.parser._is_end_of_quote(
                 "There is no end quote symbol", f"{START_SOURCE_SYMBOL}SOURCE EXAMPLE"
             )
         )
 
         # Test case: next line starts with five uppercase characters
         self.assertTrue(
-            self.parser._Parser__is_end_of_quote(
+            self.parser._is_end_of_quote(
                 "There is no end quote symbol",
                 "SOURCE EXAMPLE without start source symbol",
             )
@@ -40,13 +47,11 @@ class TestJsonResult(unittest.TestCase):
 
         # Test case: none of the conditions are met
         self.assertFalse(
-            self.parser._Parser__is_end_of_quote(
-                "There is no end quote symbol", "Next line"
-            )
+            self.parser._is_end_of_quote("There is no end quote symbol", "Next line")
         )
 
-    # Tests for Parser.__parse_letter_date_title
-    def test__parse_letter_date_title(self):
+    # Tests for Parser._parse_letter_date_title
+    def test_parse_letter_date_title(self):
         # Test case: first letter is not empty
         lines = [
             "E",
@@ -59,9 +64,9 @@ class TestJsonResult(unittest.TestCase):
             "expected explanation",
             "expected explanation.",
         ]
-        expected_result = (
+        expected_result = FirstLinesData(
             "E",
-            "January 1st",
+            "January 1",
             "EXPECTED TITLE",
             [
                 "“Expected quote",
@@ -72,9 +77,7 @@ class TestJsonResult(unittest.TestCase):
                 "expected explanation.",
             ],
         )
-        self.assertEqual(
-            self.parser._Parser__parse_letter_date_title(lines), expected_result
-        )
+        self.assertEqual(self.parser._parse_letter_date_title(lines), expected_result)
 
         # Test case: first letter is prefixed anf title is multiline
         lines = [
@@ -91,9 +94,9 @@ class TestJsonResult(unittest.TestCase):
             "expected explanation",
             "expected explanation.",
         ]
-        expected_result = (
+        expected_result = FirstLinesData(
             "#E",
-            "January 1st",
+            "January 1",
             "EXPECTED TITLE",
             [
                 "“Expected quote",
@@ -104,12 +107,10 @@ class TestJsonResult(unittest.TestCase):
                 "expected explanation.",
             ],
         )
-        self.assertEqual(
-            self.parser._Parser__parse_letter_date_title(lines), expected_result
-        )
+        self.assertEqual(self.parser._parse_letter_date_title(lines), expected_result)
 
-    # Tests for Parser.__parse_page_text
-    def test__parse_page_text(self):
+    # Tests for Parser._parse_page_text
+    def test_parse_page_text(self):
         # Test case: first letter is not empty and correct quote format
         text = """E
           January 1st
@@ -123,12 +124,14 @@ class TestJsonResult(unittest.TestCase):
         """
         expected_result = (
             "January 1",
-            "EXPECTED TITLE",
-            "“Expected quote expected quote”",
-            "—EXPECTED SOURCE",
-            "Expected explanation expected explanation expected explanation.",
+            ParsedStoicPageContent(
+                "EXPECTED TITLE",
+                "“Expected quote expected quote”",
+                "—EXPECTED SOURCE",
+                "Expected explanation expected explanation expected explanation.",
+            ),
         )
-        self.assertEqual(self.parser._Parser__parse_page_text(text), expected_result)
+        self.assertEqual(self.parser._parse_page_text(text), expected_result)
 
         # Test case: first letter is empty and quote is missing END_QUOTE_SYMBOL and START_SOURCE_SYMBOL
         text = """January 1st
@@ -142,12 +145,14 @@ class TestJsonResult(unittest.TestCase):
         """
         expected_result = (
             "January 1",
-            "EXPECTED TITLE",
-            "“Expected quote expected quote”",
-            "—EXPECTED SOURCE",
-            "Expected explanation expected explanation expected explanation.",
+            ParsedStoicPageContent(
+                "EXPECTED TITLE",
+                "“Expected quote expected quote”",
+                "—EXPECTED SOURCE",
+                "Expected explanation expected explanation expected explanation.",
+            ),
         )
-        self.assertEqual(self.parser._Parser__parse_page_text(text), expected_result)
+        self.assertEqual(self.parser._parse_page_text(text), expected_result)
 
     # Check if result JSON file has 366 entries
     def test_total_entries(self):
