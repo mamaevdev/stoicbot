@@ -12,5 +12,5 @@ This project will have two phases:
 For the tests, run the following command:
 
 ```bash
-python3 pdf_parsing/parser.py && python3 pdf_parsing/test_parser_result.py
+python3 pdf_parsing/parser.py && pytest pdf_parsing/test_parser_result.py
 ```
