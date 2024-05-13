@@ -203,7 +203,7 @@ class Parser:
         date = lines[index].strip()[:-2]
         index += 1
 
-        # Required to cover cases where there is invisible linebreak in the title that splits it into multiple lines.
+        # Required to cover cases with invisible linebreaks in titles that splits them into multiple lines.
         title_lines = []
         while lines[index].isupper():
             title_lines.append(lines[index])

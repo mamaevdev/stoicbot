@@ -163,7 +163,7 @@ def test_dates(json_data):
     assert dates[30] == "January 31"
     assert dates[31] == "February 1"
     assert dates[37] == "February 7"  # First letter is prefixed with quote
-    assert dates[39] == "February 9"  # Multiline title
+    assert dates[39] == "February 9"  # Title with invisible linebreaks
     assert dates[59] == "February 29"
     assert dates[60] == "March 1"
     assert dates[90] == "March 31"
